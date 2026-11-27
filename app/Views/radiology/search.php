@@ -19,7 +19,7 @@
 
         .main-container {
             max-width: 1400px;
-            margin: 40px auto;
+            margin: 16px auto;
         }
 
         .page-title {
@@ -116,14 +116,6 @@
 <!-- MAIN CONTENT -->
 <div class="container-fluid main-container">
 
-    <!-- PAGE TITLE -->
-    <div class="mb-4">
-        <h3 class="page-title">Radiology Report Viewer</h3>
-        <p class="text-muted">
-            Search and view radiology examination reports
-        </p>
-    </div>
-
     <!-- FLASH MESSAGE -->
     <?php if (session()->getFlashdata('success')): ?>
         <div class="alert alert-success alert-dismissible fade show">
@@ -139,159 +131,83 @@
         </div>
     <?php endif; ?>
 
-    <!-- SEARCH FORM -->
+<?php
+    $activeFilters = count(array_filter([$dateFrom ?? '', $dateTo ?? '', $timeFrom ?? '', $timeTo ?? ''], static fn($v) => $v !== ''));
+    $showFilters   = $activeFilters > 0 || !empty($filterError);
+?>
+    <!-- SEARCH -->
+    <div class="card search-card shadow-sm mb-3">
+        <div class="card-body py-3">
+            <form action="<?= site_url('radiology') ?>" method="get">
 
-<!-- SEARCH FORM -->
-<div class="card search-card shadow-sm mb-4">
-    <div class="card-body p-4">
+                <div class="row g-2 align-items-center">
+                    <div class="col-md-3 col-xl-2">
+                        <select name="type" class="form-select" aria-label="Search by">
+                            <option value="all" <?= ($searchBy ?? 'all') === 'all' ? 'selected' : '' ?>>All Fields</option>
+                            <option value="patient_id" <?= ($searchBy ?? '') === 'patient_id' ? 'selected' : '' ?>>Patient ID</option>
+                            <option value="patient_name" <?= ($searchBy ?? '') === 'patient_name' ? 'selected' : '' ?>>Patient Name</option>
+                            <option value="accession_number" <?= ($searchBy ?? '') === 'accession_number' ? 'selected' : '' ?>>Accession Number</option>
+                        </select>
+                    </div>
 
-        <form action="<?= site_url('radiology') ?>" method="get">
+                    <div class="col">
+                        <input type="search" name="q" class="form-control"
+                               placeholder="Search patient ID, name or accession number"
+                               aria-label="Search keyword"
+                               value="<?= esc($keyword ?? '') ?>" autofocus>
+                    </div>
 
-            <!-- Keyword Search -->
-            <div class="row g-3 align-items-end mb-3">
-
-                <div class="col-md-3">
-                    <label for="type" class="form-label">
-                        Search By
-                    </label>
-
-                    <select name="type" id="type" class="form-select">
-                        <option value="all"
-                            <?= ($searchBy ?? 'all') === 'all' ? 'selected' : '' ?>>
-                            All Fields (ID, Name, Accession)
-                        </option>
-
-                        <option value="patient_id"
-                            <?= ($searchBy ?? '') === 'patient_id' ? 'selected' : '' ?>>
-                            Patient ID
-                        </option>
-
-                        <option value="patient_name"
-                            <?= ($searchBy ?? '') === 'patient_name' ? 'selected' : '' ?>>
-                            Patient Name
-                        </option>
-
-                        <option value="accession_number"
-                            <?= ($searchBy ?? '') === 'accession_number' ? 'selected' : '' ?>>
-                            Accession Number
-                        </option>
-                    </select>
+                    <div class="col-auto d-flex gap-2">
+                        <button type="submit" class="btn btn-primary px-4">Search</button>
+                        <button type="button" class="btn btn-outline-primary"
+                                data-bs-toggle="collapse" data-bs-target="#searchFilters"
+                                aria-expanded="<?= $showFilters ? 'true' : 'false' ?>" aria-controls="searchFilters">
+                            Filters<?php if ($activeFilters > 0): ?> <span class="badge bg-primary"><?= $activeFilters ?></span><?php endif; ?>
+                        </button>
+                        <a href="<?= site_url('radiology') ?>" class="btn btn-outline-secondary">Reset</a>
+                    </div>
                 </div>
 
-                <div class="col-md-7">
-                    <label for="q" class="form-label">
-                        Search Keyword
-                    </label>
+                <div class="collapse<?= $showFilters ? ' show' : '' ?>" id="searchFilters">
+                    <div class="row g-2 mt-1">
+                        <div class="col-lg-6">
+                            <div class="input-group">
+                                <span class="input-group-text">Date</span>
+                                <input type="date" name="date_from" class="form-control" aria-label="Date from" value="<?= esc($dateFrom ?? '') ?>">
+                                <span class="input-group-text">to</span>
+                                <input type="date" name="date_to" class="form-control" aria-label="Date to" value="<?= esc($dateTo ?? '') ?>">
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="input-group">
+                                <span class="input-group-text">Time</span>
+                                <input type="time" name="time_from" class="form-control" aria-label="Time from" value="<?= esc($timeFrom ?? '') ?>">
+                                <span class="input-group-text">to</span>
+                                <input type="time" name="time_to" class="form-control" aria-label="Time to" value="<?= esc($timeTo ?? '') ?>">
+                            </div>
+                        </div>
+                    </div>
 
-                    <input type="text"
-                           name="q"
-                           id="q"
-                           class="form-control"
-                           placeholder="Patient ID, Patient Name or Accession Number"
-                           value="<?= esc($keyword ?? '') ?>">
+                    <?php if (!empty($filterError)): ?>
+                        <div class="alert alert-danger py-2 mt-2 mb-0">
+                            <?= esc($filterError) ?>
+                        </div>
+                    <?php endif; ?>
                 </div>
 
-                <div class="col-md-2 d-grid">
-                    <button type="submit" class="btn btn-primary">
-                        Search
-                    </button>
-                </div>
-
-            </div>
-
-            <hr>
-
-            <!-- Date and Time Filters -->
-            <h6 class="mb-3">Date & Time Filter</h6>
-
-            <div class="row g-3">
-
-                <div class="col-md-3">
-                    <label for="date_from" class="form-label">
-                        Date From
-                    </label>
-
-                    <input type="date"
-                           name="date_from"
-                           id="date_from"
-                           class="form-control"
-                           value="<?= esc($dateFrom ?? '') ?>">
-                </div>
-
-                <div class="col-md-3">
-                    <label for="date_to" class="form-label">
-                        Date To
-                    </label>
-
-                    <input type="date"
-                           name="date_to"
-                           id="date_to"
-                           class="form-control"
-                           value="<?= esc($dateTo ?? '') ?>">
-                </div>
-
-                <div class="col-md-3">
-                    <label for="time_from" class="form-label">
-                        Time From
-                    </label>
-
-                    <input type="time"
-                           name="time_from"
-                           id="time_from"
-                           class="form-control"
-                           value="<?= esc($timeFrom ?? '') ?>">
-                </div>
-
-                <div class="col-md-3">
-                    <label for="time_to" class="form-label">
-                        Time To
-                    </label>
-
-                    <input type="time"
-                           name="time_to"
-                           id="time_to"
-                           class="form-control"
-                           value="<?= esc($timeTo ?? '') ?>">
-                </div>
-
-            </div>
-
-            <?php if (!empty($filterError)): ?>
-                <div class="alert alert-danger mt-3 mb-0">
-                    <?= esc($filterError) ?>
-                </div>
-            <?php endif; ?>
-
-            <div class="mt-3 d-flex gap-2">
-                <button type="submit" class="btn btn-primary">
-                    Apply Filter
-                </button>
-
-                <a href="<?= site_url('radiology') ?>"
-                   class="btn btn-outline-secondary">
-                    Reset
-                </a>
-            </div>
-
-        </form>
-
+            </form>
+        </div>
     </div>
-</div>
 
     <!-- SEARCH RESULTS -->
     <div class="card search-card shadow-sm">
 
-        <div class="card-header bg-white py-3">
+        <div class="card-header bg-white py-2">
             <div class="d-flex justify-content-between align-items-center">
-
-                <h5 class="mb-0">
-                    Search Results
-                </h5>
-
+                <h6 class="mb-0">Search Results</h6>
                 <span class="badge bg-primary">
                     <?= isset($total) ? number_format($total) : '0' ?> Records
                 </span>
-
             </div>
         </div>
 
@@ -299,7 +215,7 @@
 
             <div class="table-responsive">
 
-                <table class="table table-bordered table-hover align-middle">
+                <table class="table table-sm table-bordered table-hover align-middle">
 
                     <thead>
                         <tr>
