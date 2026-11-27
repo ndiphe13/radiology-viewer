@@ -19,7 +19,7 @@
                 <div class="card-body p-4">
 
                     <h4 class="text-center mb-2">
-                        CA SRG Meddiff - Radiology Report Viewer
+                        CA PLM Meddiff - Radiology Report Viewer
                     </h4>
 
                     <p class="text-center text-muted mb-4">
