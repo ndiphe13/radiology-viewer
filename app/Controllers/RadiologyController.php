@@ -202,11 +202,37 @@ class RadiologyController extends BaseController
             throw PageNotFoundException::forPageNotFound('PDF file not found.');
         }
 
+        $this->auditReportAccess('REPORT_VIEW', (int) $report['id']);
+
+        // Never cache patient data in the browser or proxies
         return $this->response
             ->setHeader('Content-Type', 'application/pdf')
             ->setHeader('Content-Disposition', 'inline; filename="radiology-report.pdf"')
             ->setHeader('X-Content-Type-Options', 'nosniff')
+            ->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private')
+            ->setHeader('Pragma', 'no-cache')
+            ->setHeader('Expires', '0')
             ->setBody(file_get_contents($pdf));
+    }
+
+    /**
+     * Record who opened which report.
+     */
+    private function auditReportAccess(string $event, int $reportId): void
+    {
+        db_connect()->table('audit_logs')->insert([
+            'user_id'     => session()->get('user_id'),
+            'username'    => session()->get('username'),
+            'event_type'  => $event,
+            'target_type' => 'RADIOLOGY_REPORT',
+            'target_id'   => (string) $reportId,
+            'ip_address'  => $this->request->getIPAddress(),
+            'user_agent'  => substr(
+                $this->request->getUserAgent()->getAgentString(),
+                0,
+                255
+            ),
+        ]);
     }
 
     /**
@@ -215,6 +241,8 @@ class RadiologyController extends BaseController
     public function images($id)
     {
         [$study, $files] = $this->loadStudyImages((int) $id);
+
+        $this->auditReportAccess('IMAGES_VIEW', (int) $id);
 
         return view('radiology/images', [
             'title'      => 'Image Preview',

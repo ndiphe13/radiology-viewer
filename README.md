@@ -7,7 +7,11 @@ Features:
 - Login with roles: `admin`, `radiology`, `auditor`
 - Search reports by patient ID, patient name or accession number, with date/time filters
 - Inline PDF viewing from the PACS report share
-- Audit log (login, logout, report views, user changes)
+- DICOM image preview (JPEG via DCMTK)
+- QR share links for patients, with PIN and expiry
+- Audit log (login, logout, report and image views, user changes)
+
+Full server setup (packages, SMB mounts, nginx, DICOM, share links): see [DEPLOY.md](DEPLOY.md).
 - User management (admin only)
 
 ## Requirements
