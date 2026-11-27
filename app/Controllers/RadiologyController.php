@@ -26,13 +26,14 @@ class RadiologyController extends BaseController
 
         // Allowed search fields
         $allowedTypes = [
+            'all',
             'patient_id',
             'patient_name',
             'accession_number',
         ];
 
         if (!in_array($searchBy, $allowedTypes, true)) {
-            $searchBy = 'patient_id';
+            $searchBy = 'all';
         }
 
         // Validate date format
@@ -97,7 +98,16 @@ class RadiologyController extends BaseController
 
         // Apply keyword search
         if ($keyword !== '') {
-            $builder->like($searchBy, $keyword);
+            if ($searchBy === 'all') {
+                // Match the keyword in any of the searchable fields
+                $builder->groupStart()
+                    ->like('patient_id', $keyword)
+                    ->orLike('patient_name', $keyword)
+                    ->orLike('accession_number', $keyword)
+                    ->groupEnd();
+            } else {
+                $builder->like($searchBy, $keyword);
+            }
         }
 
         // Apply date range
