@@ -21,6 +21,17 @@ class AuthController extends BaseController
      */
     public function attemptLogin()
     {
+        // Brute-force protection: max 10 login attempts per IP per 5 minutes.
+        $throttler = service('throttler');
+        $throttleKey = 'login_' . md5($this->request->getIPAddress());
+
+        if ($throttler->check($throttleKey, 10, 5 * MINUTE) === false) {
+            $wait = max(1, (int) ceil($throttler->getTokenTime() / 60));
+
+            return redirect()->to(site_url('login'))
+                ->with('error', "Terlalu banyak percobaan login. Silakan coba lagi dalam {$wait} menit.");
+        }
+
         $username = trim((string) $this->request->getPost('username'));
         $password = (string) $this->request->getPost('password');
 

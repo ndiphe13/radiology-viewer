@@ -286,7 +286,22 @@ class RadiologyController extends BaseController
             );
         }
 
-        // Display PDF in browser
+        // Record who opened which report
+        db_connect()->table('audit_logs')->insert([
+            'user_id'     => session()->get('user_id'),
+            'username'    => session()->get('username'),
+            'event_type'  => 'REPORT_VIEW',
+            'target_type' => 'RADIOLOGY_REPORT',
+            'target_id'   => (string) $report['id'],
+            'ip_address'  => $this->request->getIPAddress(),
+            'user_agent'  => substr(
+                $this->request->getUserAgent()->getAgentString(),
+                0,
+                255
+            ),
+        ]);
+
+        // Display PDF in browser; never cache patient data
         return $this->response
             ->setHeader('Content-Type', 'application/pdf')
             ->setHeader(
@@ -294,6 +309,9 @@ class RadiologyController extends BaseController
                 'inline; filename="radiology-report.pdf"'
             )
             ->setHeader('X-Content-Type-Options', 'nosniff')
+            ->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private')
+            ->setHeader('Pragma', 'no-cache')
+            ->setHeader('Expires', '0')
             ->setBody($pdfContent);
     }
 }
