@@ -10,10 +10,8 @@ $routes->post('login', 'AuthController::attemptLogin');
 $routes->post('logout', 'AuthController::logout');
 
 // Home - Redirect to Radiology Viewer
+// Always go to the login page; it forwards logged-in users to the viewer.
 $routes->get('/', static function () {
-    if (session()->get('isLoggedIn')) {
-        return redirect()->to(site_url('radiology'));
-    }
     return redirect()->to(site_url('login'));
 });
 
