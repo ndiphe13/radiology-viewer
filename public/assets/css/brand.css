@@ -77,8 +77,22 @@ h1, h2, h3, h4, h5, .page-title {
     background-color: var(--ca-teal-dark) !important;
 }
 .badge.bg-info {
-    background-color: var(--ca-teal-light) !important;
-    color: var(--ca-teal-dark) !important;
+    background-color: var(--ca-teal-dark) !important;
+    color: #FFFFFF !important;
+}
+
+/* Navbar buttons: one consistent white outline style on navy */
+.navbar .btn-outline-info,
+.navbar .btn-outline-warning,
+.navbar .btn-outline-light {
+    --bs-btn-color: #FFFFFF;
+    --bs-btn-border-color: rgba(255, 255, 255, .7);
+    --bs-btn-hover-color: var(--ca-navy);
+    --bs-btn-hover-bg: #FFFFFF;
+    --bs-btn-hover-border-color: #FFFFFF;
+    --bs-btn-active-color: var(--ca-navy);
+    --bs-btn-active-bg: var(--ca-teal-light);
+    --bs-btn-active-border-color: #FFFFFF;
 }
 
 /* Cards and tables */
@@ -116,4 +130,12 @@ h1, h2, h3, h4, h5, .page-title {
 }
 .login-page .card {
     border-top: 5px solid var(--ca-teal) !important;
+}
+/* Text placed directly on the gradient (outside the card) */
+.login-page .card ~ .text-muted,
+.login-page .card ~ * .text-muted,
+.login-page .card ~ p,
+.login-page .card ~ small,
+.login-page .card ~ div {
+    color: rgba(255, 255, 255, .85) !important;
 }
