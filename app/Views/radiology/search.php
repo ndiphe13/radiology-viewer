@@ -145,6 +145,11 @@
                     </label>
 
                     <select name="type" id="type" class="form-select">
+                        <option value="all"
+                            <?= ($searchBy ?? 'all') === 'all' ? 'selected' : '' ?>>
+                            All Fields (ID, Name, Accession)
+                        </option>
+
                         <option value="patient_id"
                             <?= ($searchBy ?? '') === 'patient_id' ? 'selected' : '' ?>>
                             Patient ID
