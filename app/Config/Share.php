@@ -10,7 +10,9 @@ use CodeIgniter\Config\BaseConfig;
 class Share extends BaseConfig
 {
     /** Roles allowed to create and manage share links. */
-    public array $allowedRoles = ['admin', 'user'];
+    // Share feature hidden for now (report_shares tables not created yet).
+    // To re-enable: e.g. ['admin', 'radiology'] and uncomment routes in Config/Routes.php.
+    public array $allowedRoles = [];
 
     /**
      * Validity choices shown when creating a link: hours => label.
