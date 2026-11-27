@@ -2,7 +2,10 @@
 
 namespace App\Controllers;
 
+use App\Libraries\DicomPreview;
+use App\Libraries\ReportFiles;
 use App\Models\RadiologyReportModel;
+use CodeIgniter\Exceptions\PageNotFoundException;
 
 class RadiologyController extends BaseController
 {
@@ -176,6 +179,7 @@ class RadiologyController extends BaseController
             'filterError' => $filterError,
             'reports'     => $result,
             'pager'       => $reports->pager,
+            'total'       => $reports->pager->getTotal(),
         ];
 
         return view('radiology/search', $data);
@@ -187,131 +191,66 @@ class RadiologyController extends BaseController
      */
     public function viewPdf($id)
     {
-        $reportModel = new RadiologyReportModel();
-
-        // Find report using database ID
-        $report = $reportModel
+        $report = (new RadiologyReportModel())
             ->where('id', $id)
             ->where('enabled', 'Y')
             ->first();
 
-        if (!$report) {
-            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound(
-                'Radiology report not found.'
-            );
+        $pdf = $report ? (new ReportFiles())->findPdf($report) : null;
+
+        if ($pdf === null) {
+            throw PageNotFoundException::forPageNotFound('PDF file not found.');
         }
 
-        // SMB mount root
-        $basePath = '/mnt/radiology-reports';
-
-        // Windows path from database
-        $windowsPath = $report['report_folder_location'];
-
-        // Expected Windows path prefix
-        $windowsPrefix = "V:\\Meddiff\\InstaPACS\\reports\\";
-
-        // Validate Windows path
-        if (
-            strncasecmp(
-                $windowsPath,
-                $windowsPrefix,
-                strlen($windowsPrefix)
-            ) !== 0
-        ) {
-            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound(
-                'Invalid report folder path.'
-            );
-        }
-
-        // Extract relative folder path
-        $relativePath = substr(
-            $windowsPath,
-            strlen($windowsPrefix)
-        );
-
-        // Convert Windows separators to Linux separators
-        $relativePath = str_replace('\\', '/', $relativePath);
-
-        // Validate accession number
-        $accession = (string) $report['accession_number'];
-
-        if (!preg_match('/^[A-Za-z0-9_-]+$/', $accession)) {
-            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound(
-                'Invalid accession number.'
-            );
-        }
-
-        // Build PDF directory
-        $filePath = $basePath . '/'
-            . $relativePath . '/'
-            . $accession;
-
-        // Resolve real paths
-        $realBase = realpath($basePath);
-        $realDirectory = realpath($filePath);
-
-        // Validate directory is inside SMB mount root
-        if (
-            $realBase === false ||
-            $realDirectory === false ||
-            strpos(
-                $realDirectory,
-                $realBase . DIRECTORY_SEPARATOR
-            ) !== 0
-        ) {
-            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound(
-                'PDF folder not found.'
-            );
-        }
-
-        // Find PDF files
-        $files = glob($realDirectory . '/*.pdf');
-
-        if (
-            !$files ||
-            !is_file($files[0]) ||
-            !is_readable($files[0])
-        ) {
-            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound(
-                'PDF file not found.'
-            );
-        }
-
-        // Read PDF
-        $pdfContent = file_get_contents($files[0]);
-
-        if ($pdfContent === false) {
-            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound(
-                'Unable to read PDF file.'
-            );
-        }
-
-        // Record who opened which report
-        db_connect()->table('audit_logs')->insert([
-            'user_id'     => session()->get('user_id'),
-            'username'    => session()->get('username'),
-            'event_type'  => 'REPORT_VIEW',
-            'target_type' => 'RADIOLOGY_REPORT',
-            'target_id'   => (string) $report['id'],
-            'ip_address'  => $this->request->getIPAddress(),
-            'user_agent'  => substr(
-                $this->request->getUserAgent()->getAgentString(),
-                0,
-                255
-            ),
-        ]);
-
-        // Display PDF in browser; never cache patient data
         return $this->response
             ->setHeader('Content-Type', 'application/pdf')
-            ->setHeader(
-                'Content-Disposition',
-                'inline; filename="radiology-report.pdf"'
-            )
+            ->setHeader('Content-Disposition', 'inline; filename="radiology-report.pdf"')
             ->setHeader('X-Content-Type-Options', 'nosniff')
-            ->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private')
-            ->setHeader('Pragma', 'no-cache')
-            ->setHeader('Expires', '0')
-            ->setBody($pdfContent);
+            ->setBody(file_get_contents($pdf));
+    }
+
+    /**
+     * DICOM image preview page for a report's study.
+     */
+    public function images($id)
+    {
+        [$study, $files] = $this->loadStudyImages((int) $id);
+
+        return view('radiology/images', [
+            'title'      => 'Image Preview',
+            'study'        => $study,
+            'imageCount'   => count($files),
+            'imageBaseUrl' => site_url('radiology/images/' . (int) $id),
+        ]);
+    }
+
+    /**
+     * One DICOM image of the study, converted to JPEG.
+     */
+    public function image($id, $index)
+    {
+        [, $files] = $this->loadStudyImages((int) $id);
+
+        return (new DicomPreview())->imageResponse($files, (int) $index, $this->response);
+    }
+
+    /**
+     * @return array{0: array, 1: list<string>}
+     */
+    private function loadStudyImages(int $id): array
+    {
+        $study = (new RadiologyReportModel())->findStudyForReport($id);
+
+        if (!$study) {
+            throw PageNotFoundException::forPageNotFound('Study not found.');
+        }
+
+        $files = (new DicomPreview())->filesForStudy($study);
+
+        if ($files === null) {
+            throw PageNotFoundException::forPageNotFound('Study images not found.');
+        }
+
+        return [$study, $files];
     }
 }

@@ -1,3 +1,7 @@
+<?php
+    $shareConfig = config(\Config\Share::class);
+    $canShare    = in_array(session()->get('role'), $shareConfig->allowedRoles, true);
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -67,6 +71,13 @@
                     <?= esc(ucfirst(session()->get('role'))) ?>
                 </small>
             </div>
+
+            <?php if ($canShare): ?>
+                <a href="<?= site_url('radiology/shares') ?>"
+                   class="btn btn-outline-light btn-sm">
+                    Share Links
+                </a>
+            <?php endif; ?>
 
             <?php if (session()->get('role') === 'admin' || session()->get('role') === 'auditor'): ?>
                 <a href="<?= site_url('audit') ?>"
@@ -291,7 +302,7 @@
                             <th>Accession Number</th>
                             <th>Physician</th>
                             <th>Report Date</th>
-                            <th style="width: 120px;">Action</th>
+                            <th style="width: 190px;">Action</th>
                         </tr>
                     </thead>
 
@@ -299,7 +310,11 @@
 
                     <?php if (!empty($reports)): ?>
 
-                        <?php $no = 1; ?>
+                        <?php
+                            $no = isset($pager) && $pager
+                                ? 1 + ($pager->getCurrentPage() - 1) * $pager->getPerPage()
+                                : 1;
+                        ?>
 
                         <?php foreach ($reports as $report): ?>
 
@@ -333,6 +348,29 @@
                                        class="btn btn-sm btn-outline-primary">
                                         View PDF
                                     </a>
+
+                                    <a href="<?= site_url('radiology/images/' . $report['id']) ?>"
+                                       target="_blank"
+                                       class="btn btn-sm btn-outline-success mt-1">
+                                        View Images
+                                    </a>
+
+                                    <?php if ($canShare): ?>
+                                        <form method="post"
+                                              action="<?= site_url('radiology/share/' . $report['id']) ?>"
+                                              class="d-flex gap-1 mt-1"
+                                              onsubmit="return confirm('Create a share link (QR code) for this patient?')">
+                                            <?= csrf_field() ?>
+                                            <select name="expiry_hours" class="form-select form-select-sm" title="Link validity">
+                                                <?php foreach ($shareConfig->expiryOptions as $hours => $label): ?>
+                                                    <option value="<?= (int) $hours ?>" <?= (int) $hours === $shareConfig->defaultExpiryHours ? 'selected' : '' ?>>
+                                                        <?= esc($label) ?>
+                                                    </option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                            <button type="submit" class="btn btn-sm btn-outline-dark">Share</button>
+                                        </form>
+                                    <?php endif; ?>
 
                                 </td>
                             </tr>
