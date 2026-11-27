@@ -13,6 +13,11 @@ class AuthController extends BaseController
             return redirect()->to(site_url('radiology'));
         }
 
+        // Browsers that visited during setup cached a broken copy of "/"
+        // (raw index.php served as a download). Tell them to drop this
+        // site's HTTP cache; cookies and logins are not affected.
+        $this->response->setHeader('Clear-Site-Data', '"cache"');
+
         return view('auth/login');
     }
 
