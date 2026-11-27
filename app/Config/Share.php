@@ -40,7 +40,7 @@ class Share extends BaseConfig
 
     /** What the recipient may see. */
     public bool $allowPdf    = true;
-    public bool $allowImages = true;
+    public bool $allowImages = false; // image viewer disabled for now
 
     /**
      * Address used in the link / QR code. Must be reachable by the recipient

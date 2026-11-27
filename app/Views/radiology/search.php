@@ -349,12 +349,6 @@
                                         View PDF
                                     </a>
 
-                                    <a href="<?= site_url('radiology/images/' . $report['id']) ?>"
-                                       target="_blank"
-                                       class="btn btn-sm btn-outline-success mt-1">
-                                        View Images
-                                    </a>
-
                                     <?php if ($canShare): ?>
                                         <form method="post"
                                               action="<?= site_url('radiology/share/' . $report['id']) ?>"

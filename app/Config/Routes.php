@@ -21,8 +21,9 @@ $routes->get('/', static function () {
 $routes->group('radiology', ['filter' => 'auth'], static function ($routes) {
     $routes->get('', 'RadiologyController::search');
     $routes->get('view/(:num)', 'RadiologyController::viewPdf/$1');
-    $routes->get('images/(:num)', 'RadiologyController::images/$1');
-    $routes->get('images/(:num)/(:num)', 'RadiologyController::image/$1/$2');
+    // Image viewer disabled until DICOM columns and image share are available
+    // $routes->get('images/(:num)', 'RadiologyController::images/$1');
+    // $routes->get('images/(:num)/(:num)', 'RadiologyController::image/$1/$2');
 
     // Share links (roles set in Config\Share::$allowedRoles)
     $routes->post('share/(:num)', 'ShareController::create/$1');
@@ -35,7 +36,8 @@ $routes->group('radiology', ['filter' => 'auth'], static function ($routes) {
 $routes->get('s/([a-f0-9]{32})', 'ShareController::open/$1');
 $routes->post('s/([a-f0-9]{32})', 'ShareController::verify/$1');
 $routes->get('s/([a-f0-9]{32})/pdf', 'ShareController::pdf/$1');
-$routes->get('s/([a-f0-9]{32})/images/(:num)', 'ShareController::image/$1/$2');
+// Image viewer disabled (see above)
+// $routes->get('s/([a-f0-9]{32})/images/(:num)', 'ShareController::image/$1/$2');
 
 // Audit Log - Admin and Auditor only
 $routes->get(
