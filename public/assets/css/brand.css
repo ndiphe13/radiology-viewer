@@ -1,0 +1,141 @@
+/*
+ * Columbia Asia brand palette (from columbiaasia.co.id Elementor globals)
+ *   primary teal  #00B2A9   accent navy  #003087   font Roboto
+ * Loaded after Bootstrap 5.3 on every page.
+ * Teal is too light for white text (2.5:1), so navy carries buttons/text
+ * and teal is used for accents; teal-dark is used where teal holds text.
+ */
+:root {
+    --ca-teal: #00B2A9;
+    --ca-teal-dark: #00807A;   /* 4.8:1 on white */
+    --ca-teal-light: #E6F7F6;
+    --ca-navy: #003087;
+    --ca-navy-dark: #002466;
+    --ca-grey: #54595F;
+    --ca-bg: #F3F8F9;
+
+    --bs-primary: var(--ca-navy);
+    --bs-primary-rgb: 0, 48, 135;
+    --bs-link-color: var(--ca-navy);
+    --bs-link-color-rgb: 0, 48, 135;
+    --bs-link-hover-color: var(--ca-teal-dark);
+    --bs-link-hover-color-rgb: 0, 128, 122;
+    --bs-body-font-family: "Roboto", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+    --bs-body-color: #263445;
+    --bs-focus-ring-color: rgba(0, 178, 169, .35);
+}
+
+body,
+body.bg-light {
+    background: var(--ca-bg) !important;
+}
+
+h1, h2, h3, h4, h5, .page-title {
+    color: var(--ca-navy);
+}
+
+/* Navbar: navy with teal underline */
+.navbar.bg-dark {
+    background-color: var(--ca-navy) !important;
+    border-bottom: 4px solid var(--ca-teal);
+}
+.navbar .text-secondary {
+    color: #B9D3F0 !important;
+}
+
+/* Buttons */
+.btn-primary {
+    --bs-btn-bg: var(--ca-navy);
+    --bs-btn-border-color: var(--ca-navy);
+    --bs-btn-hover-bg: var(--ca-navy-dark);
+    --bs-btn-hover-border-color: var(--ca-navy-dark);
+    --bs-btn-active-bg: var(--ca-navy-dark);
+    --bs-btn-active-border-color: var(--ca-navy-dark);
+    --bs-btn-disabled-bg: var(--ca-navy);
+    --bs-btn-disabled-border-color: var(--ca-navy);
+    --bs-btn-focus-shadow-rgb: 0, 178, 169;
+}
+.btn-outline-primary {
+    --bs-btn-color: var(--ca-navy);
+    --bs-btn-border-color: var(--ca-navy);
+    --bs-btn-hover-bg: var(--ca-navy);
+    --bs-btn-hover-border-color: var(--ca-navy);
+    --bs-btn-active-bg: var(--ca-navy-dark);
+    --bs-btn-active-border-color: var(--ca-navy-dark);
+    --bs-btn-focus-shadow-rgb: 0, 178, 169;
+}
+.btn-secondary {
+    --bs-btn-bg: var(--ca-grey);
+    --bs-btn-border-color: var(--ca-grey);
+    --bs-btn-hover-bg: #3F4348;
+    --bs-btn-hover-border-color: #3F4348;
+}
+
+/* Badges / backgrounds */
+.badge.bg-primary,
+.bg-primary {
+    background-color: var(--ca-teal-dark) !important;
+}
+.badge.bg-info {
+    background-color: var(--ca-teal-dark) !important;
+    color: #FFFFFF !important;
+}
+
+/* Navbar buttons: one consistent white outline style on navy */
+.navbar .btn-outline-info,
+.navbar .btn-outline-warning,
+.navbar .btn-outline-light {
+    --bs-btn-color: #FFFFFF;
+    --bs-btn-border-color: rgba(255, 255, 255, .7);
+    --bs-btn-hover-color: var(--ca-navy);
+    --bs-btn-hover-bg: #FFFFFF;
+    --bs-btn-hover-border-color: #FFFFFF;
+    --bs-btn-active-color: var(--ca-navy);
+    --bs-btn-active-bg: var(--ca-teal-light);
+    --bs-btn-active-border-color: #FFFFFF;
+}
+
+/* Cards and tables */
+.card {
+    border-radius: 10px;
+}
+.card-header.bg-white {
+    border-bottom: 3px solid var(--ca-teal) !important;
+}
+.table th,
+.table > thead > tr > th {
+    background: var(--ca-teal-light) !important;
+    color: var(--ca-navy);
+}
+
+/* Forms */
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--ca-teal);
+    box-shadow: 0 0 0 .25rem rgba(0, 178, 169, .25);
+}
+
+/* Pagination */
+.pagination {
+    --bs-pagination-color: var(--ca-navy);
+    --bs-pagination-active-bg: var(--ca-navy);
+    --bs-pagination-active-border-color: var(--ca-navy);
+    --bs-pagination-hover-color: var(--ca-teal-dark);
+    --bs-pagination-focus-box-shadow: 0 0 0 .25rem rgba(0, 178, 169, .25);
+}
+
+/* Login page */
+.login-page {
+    background: linear-gradient(135deg, var(--ca-navy) 0%, var(--ca-teal) 100%) !important;
+}
+.login-page .card {
+    border-top: 5px solid var(--ca-teal) !important;
+}
+/* Text placed directly on the gradient (outside the card) */
+.login-page .card ~ .text-muted,
+.login-page .card ~ * .text-muted,
+.login-page .card ~ p,
+.login-page .card ~ small,
+.login-page .card ~ div {
+    color: rgba(255, 255, 255, .85) !important;
+}

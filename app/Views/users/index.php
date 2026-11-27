@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>User Management - Radiology Viewer</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="<?= base_url('assets/css/brand.css') ?>" rel="stylesheet">
 </head>
 <body class="bg-light">
 
@@ -76,11 +78,32 @@
                                 <?php endif; ?>
                             </td>
                             <td><?= esc($user['last_login_at'] ?? '-') ?></td>
-                            <td>
+                            <td class="text-nowrap">
                                 <a href="<?= site_url('users/edit/' . $user['id']) ?>"
                                    class="btn btn-sm btn-primary">
                                     Edit
                                 </a>
+
+                                <?php if ((int) $user['id'] === (int) session()->get('user_id')): ?>
+                                    <?php // own account: no delete button ?>
+                                <?php elseif ((int) $user['is_active'] === 1): ?>
+                                    <span class="d-inline-block" tabindex="0"
+                                          title="Nonaktifkan user terlebih dahulu untuk menghapus">
+                                        <button type="button" class="btn btn-sm btn-outline-danger" disabled>
+                                            Delete
+                                        </button>
+                                    </span>
+                                <?php else: ?>
+                                    <form method="post"
+                                          action="<?= site_url('users/delete/' . $user['id']) ?>"
+                                          class="d-inline"
+                                          onsubmit="return confirm(<?= esc(json_encode('Hapus user "' . $user['username'] . '" secara permanen? Tindakan ini tidak dapat dibatalkan.'), 'attr') ?>)">
+                                        <?= csrf_field() ?>
+                                        <button type="submit" class="btn btn-sm btn-danger">
+                                            Delete
+                                        </button>
+                                    </form>
+                                <?php endif; ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>

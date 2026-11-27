@@ -7,9 +7,11 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
           rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="<?= base_url('assets/css/brand.css') ?>" rel="stylesheet">
 </head>
 
-<body class="bg-light">
+<body class="login-page">
 
 <div class="container">
     <div class="row justify-content-center align-items-center min-vh-100">

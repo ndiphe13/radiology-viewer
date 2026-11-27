@@ -4,14 +4,14 @@ namespace App\Controllers;
 
 class UserManagementController extends BaseController
 {
-    private function writeAudit(string $event, int $targetId): void
+    private function writeAudit(string $event, int $targetId, ?string $targetLabel = null): void
     {
         db_connect()->table('audit_logs')->insert([
             'user_id'    => session()->get('user_id'),
             'username'   => session()->get('username'),
             'event_type' => $event,
             'target_type'=> 'USER',
-            'target_id'  => (string) $targetId,
+            'target_id'  => substr($targetId . ($targetLabel !== null ? " ({$targetLabel})" : ''), 0, 100),
             'ip_address' => $this->request->getIPAddress(),
             'user_agent' => substr(
                 $this->request->getUserAgent()->getAgentString(),
@@ -200,5 +200,52 @@ class UserManagementController extends BaseController
 
         return redirect()->to(site_url('users'))
             ->with('success', 'Password user berhasil direset.');
+    }
+
+    /**
+     * Permanently delete a user. Only inactive users can be deleted;
+     * an active user must be deactivated (Edit > Status) first.
+     */
+    public function delete($id)
+    {
+        $id = (int) $id;
+        $db = db_connect();
+
+        $user = $db->table('users')
+            ->select('id, username, is_active')
+            ->where('id', $id)
+            ->get()
+            ->getRowArray();
+
+        if (!$user) {
+            return redirect()->to(site_url('users'))
+                ->with('error', 'User tidak ditemukan.');
+        }
+
+        if ($id === (int) session()->get('user_id')) {
+            return redirect()->to(site_url('users'))
+                ->with('error', 'Anda tidak dapat menghapus akun sendiri.');
+        }
+
+        if ((int) $user['is_active'] === 1) {
+            return redirect()->to(site_url('users'))
+                ->with('error', 'User "' . $user['username'] . '" masih aktif. Nonaktifkan user terlebih dahulu sebelum menghapus.');
+        }
+
+        // Conditional delete guards against the user being re-activated meanwhile.
+        $db->table('users')
+            ->where('id', $id)
+            ->where('is_active', 0)
+            ->delete();
+
+        if ($db->affectedRows() !== 1) {
+            return redirect()->to(site_url('users'))
+                ->with('error', 'User tidak dapat dihapus.');
+        }
+
+        $this->writeAudit('USER_DELETE', $id, $user['username']);
+
+        return redirect()->to(site_url('users'))
+            ->with('success', 'User "' . $user['username'] . '" berhasil dihapus.');
     }
 }

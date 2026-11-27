@@ -45,6 +45,8 @@
             color: #ffffff;
         }
     </style>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="<?= base_url('assets/css/brand.css') ?>" rel="stylesheet">
 </head>
 
 <body>

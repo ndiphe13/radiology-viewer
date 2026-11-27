@@ -38,5 +38,6 @@ $routes->group('users', ['filter' => ['auth', 'role:admin']], static function ($
     $routes->get('edit/(:num)', 'UserManagementController::edit/$1');
     $routes->post('update/(:num)', 'UserManagementController::update/$1');
     $routes->post('reset-password/(:num)', 'UserManagementController::resetPassword/$1');
+    $routes->post('delete/(:num)', 'UserManagementController::delete/$1');
 });
 
